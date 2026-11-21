@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>肺癌疾病認證時程甘特圖</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;--c1:#3b82f6;--c2:#10b981;--c3:#f59e0b;--c4:#ef4444;--c5:#8b5cf6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111827;--card:#1f2937;--text:#f3f4f6;--muted:#9ca3af;--line:#374151;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111827;--card:#1f2937;--text:#f3f4f6;--muted:#9ca3af;--line:#374151;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;padding:20px 16px}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;max-width:1100px;margin:0 auto}
+.scroll{overflow-x:auto}
+.chart{min-width:900px;position:relative}
+.row{display:grid;grid-template-columns:190px 1fr;border-bottom:1px solid var(--line);min-height:40px;align-items:center}
+.row.head{min-height:32px;font-size:13px;font-weight:600;color:var(--muted)}
+.name{font-size:13px;padding:6px 8px 6px 4px;line-height:1.35}
+.name small{display:block;color:var(--muted);font-size:11px}
+.tl{position:relative;height:40px}
+.head .tl{height:32px}
+.mcell{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-size:12px;padding:6px 0 0 6px;box-sizing:border-box}
+.bar{position:absolute;top:9px;height:22px;border-radius:5px;color:#fff;font-size:11px;line-height:22px;padding:0 6px;white-space:nowrap;overflow:hidden;box-sizing:border-box;min-width:6px}
+.ms{position:absolute;top:11px;width:16px;height:16px;transform:translateX(-8px) rotate(45deg);border-radius:3px}
+.dot{position:absolute;top:13px;width:12px;height:12px;border-radius:50%;transform:translateX(-6px)}
+.lbl{position:absolute;top:11px;font-size:11px;white-space:nowrap}
+.today{position:absolute;top:0;bottom:0;width:2px;background:#ef4444;opacity:.6;z-index:2;pointer-events:none}
+.ck{max-width:1100px;margin:14px auto 0}
+.ck h2{font-size:16px;margin:0 0 8px}
+.tb{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.btn{font-size:12px;background:none;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:inherit}
+.btn.on{background:var(--c1);color:#fff;border-color:var(--c1)}
+.prog{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 4px}
+.prog i{display:block;height:100%;width:0;background:var(--c2);transition:width .2s}
+.pt{font-size:12px;color:var(--muted)}
+.msg{font-size:12px;color:var(--muted);margin:4px 0 8px;min-height:16px}
+.it{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.it input[type=checkbox]{width:20px;height:20px;accent-color:#10b981;flex:none}
+.it .n{cursor:pointer}
+.it .d{margin-left:auto;color:var(--muted);font-size:12px}
+.it.done .n{text-decoration:line-through;color:var(--muted)}
+.it input[type=date]{font:inherit;font-size:13px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+.note{max-width:1100px;margin:14px auto 0;font-size:13px;color:var(--muted);line-height:1.7}
+.note b{color:var(--text)}
+</style>
+</head>
+<body>
+<h1>肺癌疾病認證時程甘特圖</h1>
+<div class="sub">2026 年 11 月 – 2027 年 7 月　｜　◆ 里程碑　● 例行會議　▬ 期間　｜　紅線＝今天</div>
+<div class="card"><div class="scroll"><div class="chart" id="chart"></div></div></div>
+<div class="card ck">
+<h2>✅ 完成進度與日期</h2>
+<div class="prog"><i id="pb"></i></div><div class="pt" id="pt"></div>
+<div class="tb">
+<button class="btn" id="be">✏️ 編輯日期</button>
+<button class="btn" id="bc">📅 依第一次實地訪視日重算申報與簡報日期</button>
+<button class="btn" id="bd">還原預設日期</button>
+<button class="btn" id="bk">清除所有勾選</button>
+</div>
+<div class="tb" id="ab" style="display:none"></div>
+<div class="msg" id="msg"></div>
+<div id="cl"></div>
+<div class="msg" id="mode"></div>
+</div>
+<div class="note"><b>假設與待確認事項</b><br>1. 實地訪視共五次：6/17（四）、6/24（四）、6/25（五）、7/1（四）、7/2（五）。申報資料與簡報暫以第一次訪視日 6/17 推算，若訪視日有調整，請改日期後按「依第一次實地訪視日重算」。<br>2. 核心團隊會議每月一次、醫療照護團隊會議每季一次，具體日期為示意，可在「編輯日期」中調整。<br>3. 預評暫排 4/1–4/7，自評表及電子資料暫排 5/3–5/9。</div>
+<script>
+const CFG={"key": "lung-plan-v2", "months": 9, "rows": [{"rid": "plan", "n": "重新擬定發展計畫、年度計畫", "kind": "bar", "c": "--c1", "items": [{"k": "plan", "s": "2026-11-01", "e": "2026-12-31"}]}, {"rid": "core", "multi": true, "add": "核心團隊會議", "n": "核心團隊會議", "sub": "每月", "kind": "dot", "c": "--c2", "items": [{"k": "cm0", "s": "2026-11-20"}, {"k": "cm1", "s": "2026-12-15"}, {"k": "cm2", "s": "2027-01-15"}, {"k": "cm3", "s": "2027-02-15"}, {"k": "cm4", "s": "2027-03-08"}, {"k": "cm5", "s": "2027-04-15"}, {"k": "cm6", "s": "2027-05-15"}, {"k": "cm7", "s": "2027-06-05"}]}, {"rid": "med", "multi": true, "add": "醫療照護團隊會議", "n": "醫療照護團隊會議", "sub": "每季", "kind": "dot", "c": "--c5", "items": [{"k": "mt0", "s": "2026-12-10"}, {"k": "mt1", "s": "2027-03-10"}, {"k": "mt2", "s": "2027-06-03"}]}, {"rid": "disc", "n": "自評表討論", "sub": "12–2月", "kind": "bar", "c": "--c3", "items": [{"k": "disc", "s": "2026-12-01", "e": "2027-02-28"}]}, {"rid": "first", "n": "第一版自評表繳交", "sub": "下班前", "kind": "ms", "c": "--c4", "items": [{"k": "first", "s": "2027-03-05"}]}, {"rid": "pre", "n": "預評", "sub": "4月初", "kind": "bar", "c": "--c1", "items": [{"k": "pre", "s": "2027-04-01", "e": "2027-04-07"}]}, {"rid": "sub", "n": "自評表及電子資料繳交", "sub": "5月初", "kind": "bar", "c": "--c3", "items": [{"k": "sub", "s": "2027-05-03", "e": "2027-05-09"}]}, {"rid": "rep", "n": "繳交給醫策會申報資料", "sub": "訪視前一個月", "kind": "ms", "c": "--c4", "items": [{"k": "rep", "s": "2027-05-17"}]}, {"rid": "ppt", "n": "繳交給醫策會簡報", "sub": "訪視前一週週一", "kind": "ms", "c": "--c4", "items": [{"k": "ppt", "s": "2027-06-07"}]}, {"rid": "visit", "multi": true, "add": "實地訪視日", "n": "正式評鑑（實地訪視）", "kind": "tick", "idx": true, "c": "--c5", "items": [{"k": "visit", "s": "2027-06-17"}, {"k": "v1", "s": "2027-06-24"}, {"k": "v2", "s": "2027-06-25"}, {"k": "v3", "s": "2027-07-01"}, {"k": "v4", "s": "2027-07-02"}]}]};
+const DAY=864e5,WD='日一二三四五六';
+const P=s=>{const a=s.split('-').map(Number);return Date.UTC(a[0],a[1]-1,a[2])};
+const F=t=>new Date(t).toISOString().slice(0,10);
+const md=s=>{const x=new Date(P(s));return (x.getUTCMonth()+1)+'/'+x.getUTCDate()};
+const wd=s=>'（'+WD[new Date(P(s)).getUTCDay()]+'）';
+const S=Date.UTC(2026,10,1),E=Date.UTC(2026,10+CFG.months,1),T=E-S;
+const pct=t=>Math.max(0,Math.min(100,(t-S)/T*100));
+const def={};CFG.rows.forEach(r=>r.items.forEach(i=>def[i.k]=i.e?[i.s,i.e]:[i.s]));
+let canW=true,st={d:{},x:{},rl:{}},edit=false,dbref=null,saveT=null,armD=false,armK=false;
+const rowItems=r=>st.rl&&st.rl[r.rid]?st.rl[r.rid].map(k=>({k})):r.items;
+const dt=k=>st.d[k]||def[k];
+const $=id=>document.getElementById(id);
+const say=t=>{$('msg').textContent=t;};
+const modeText={local:'資料目前只存在這個瀏覽器。',shared:'資料已同步，有權限的團隊成員會看到同一份日期與勾選進度。',denied:'您目前是唯讀檢視：可以查看最新日期與進度，但不能修改。如需修改，請洽擁有者開通權限。'};
+const setMode=m=>{$('mode').textContent=modeText[m];};
+try{const l=JSON.parse(localStorage.getItem(CFG.key)||'null');if(l&&l.d&&l.x){st=l;st.rl=st.rl||{};}}catch(e){}
+function save(){
+ try{localStorage.setItem(CFG.key,JSON.stringify(st));}catch(e){}
+ if(!dbref)return;
+ clearTimeout(saveT);
+ saveT=setTimeout(async()=>{try{await dbref.set({state:JSON.stringify(st)});setMode('shared');}catch(e){canW=false;edit=false;setMode('denied');draw();}},400);
+}
+function chart(){
+ let h='<div class="row head"><div class="name">項目</div><div class="tl">';
+ const mc=(i)=>{const y=2026+Math.floor((10+i)/12),m=(10+i)%12+1;return [y,m];};
+ for(let i=0;i<CFG.months;i++){const [y,m]=mc(i);const a=Date.UTC(y,m-1,1),b=Date.UTC(y,m,1);
+  h+=`<div class="mcell" style="left:${pct(a)}%;width:${(b-a)/T*100}%">${(i===0||m===1)?y+'/':''}${m}月</div>`;}
+ h+='</div></div>';
+ let g='';for(let i=0;i<CFG.months;i++){const [y,m]=mc(i);g+=`<div class="mcell" style="left:${pct(Date.UTC(y,m-1,1))}%"></div>`;}
+ CFG.rows.forEach(r=>{
+  h+=`<div class="row"><div class="name">${r.n}${r.sub?`<small>${r.sub}</small>`:''}</div><div class="tl">${g}`;
+  rowItems(r).forEach(i=>{
+   const v=dt(i.k);
+   if(r.kind==='bar'){const a=P(v[0]),b=P(v[1])+DAY;h+=`<div class="bar" style="left:${pct(a)}%;width:${pct(b)-pct(a)}%;background:var(${r.c})">${md(v[0])}–${md(v[1])}</div>`;}
+   else if(r.kind==='ms'){const a=P(v[0])+DAY/2;h+=`<div class="ms" style="left:${pct(a)}%;background:var(${r.c})"></div><div class="lbl" style="left:calc(${pct(a)}% + 14px)">${md(v[0])}${wd(v[0])}</div>`;}
+   else if(r.kind==='tick'){const a=P(v[0]);h+=`<div class="bar" style="left:${pct(a)}%;width:${pct(a+DAY)-pct(a)}%;min-width:5px;padding:0;background:var(${r.c})" title="${md(v[0])}${wd(v[0])}"></div>`;}
+   else{h+=`<div class="dot" style="left:${pct(P(v[0])+DAY/2)}%;background:var(${r.c})" title="${md(v[0])}"></div>`;}
+  });
+  h+='</div></div>';
+ });
+ const p=(Date.now()-S)/T;
+ if(p>0&&p<1)h+=`<div class="today" style="left:calc(190px + (100% - 190px) * ${p})"></div>`;
+ $('chart').innerHTML=h;
+}
+function list(){
+ const items=[];
+ CFG.rows.forEach(r=>{const ri=rowItems(r).map(i=>({k:i.k,r,v:dt(i.k)}));ri.slice().sort((a,b)=>P(a.v[0])-P(b.v[0])).forEach((x,n)=>x.j=n);items.push(...ri);});
+ items.sort((a,b)=>P(a.v[0])-P(b.v[0]));
+ const cl=$('cl');cl.innerHTML='';
+ items.forEach(it=>{
+  const d=document.createElement('div');d.className='it'+(st.x[it.k]?' done':'');
+  const name=it.r.idx?`${it.r.n}　第 ${it.j+1} 次`:it.r.kind==='dot'?`${it.r.n}（${new Date(P(it.v[0])).getUTCMonth()+1}月）`:it.r.n;
+  const sub=it.r.sub&&it.r.kind!=='dot'&&it.r.kind!=='tick'?`　<small style="color:var(--muted)">${it.r.sub}</small>`:'';
+  let ds;
+  if(edit){ds=`<input type="date" data-k="${it.k}" data-i="0" value="${it.v[0]}">`+(it.v[1]?` – <input type="date" data-k="${it.k}" data-i="1" value="${it.v[1]}">`:'');}
+  else ds=it.v[1]?`${md(it.v[0])}${wd(it.v[0])} – ${md(it.v[1])}${wd(it.v[1])}`:`${md(it.v[0])}${wd(it.v[0])}`;
+  d.innerHTML=`<input type="checkbox" ${st.x[it.k]?'checked':''}><span class="n">${name}${sub}</span><span class="d">${ds}</span>`;
+  if(edit&&it.r.multi){const b=document.createElement('button');b.className='btn';b.textContent='🗑 刪除';b.onclick=()=>delItem(it);d.appendChild(b);}
+  const tog=()=>{if(!canW)return;if(st.x[it.k])delete st.x[it.k];else st.x[it.k]=1;save();draw();};
+  const cb=d.querySelector('input[type=checkbox]');cb.disabled=!canW;cb.onchange=tog;
+  d.querySelector('.n').onclick=tog;
+  d.querySelectorAll('input[type=date]').forEach(x=>x.onchange=e=>{
+   const v=e.target.value;if(!v)return;
+   const cur=(st.d[it.k]||def[it.k]).slice();cur[+x.dataset.i]=v;
+   if(cur[1]&&cur[1]<cur[0]){if(x.dataset.i==='0')cur[1]=cur[0];else cur[0]=cur[1];}
+   st.d[it.k]=cur;save();draw();
+  });
+  cl.appendChild(d);
+ });
+ const c=items.filter(i=>st.x[i.k]).length;
+ $('pb').style.width=(c/items.length*100)+'%';
+ $('pt').textContent='已完成 '+c+' / '+items.length+' 項';
+}
+function addItem(r){
+ const ks=rowItems(r).map(i=>i.k);
+ const ds=ks.map(k=>dt(k)[0]).sort();
+ const base=ds.length?F(P(ds[ds.length-1])+7*DAY):F(Math.max(S,Math.min(E-DAY,Date.now())));
+ const k='a'+Date.now().toString(36);
+ st.rl=st.rl||{};st.rl[r.rid]=ks.concat(k);st.d[k]=[base];save();draw();
+ say('已新增一筆「'+r.add+'」，預設為 '+md(base)+wd(base)+'，請調整成實際日期。');
+}
+function delItem(it){
+ const r=it.r;st.rl=st.rl||{};
+ st.rl[r.rid]=rowItems(r).map(i=>i.k).filter(k=>k!==it.k);
+ delete st.d[it.k];delete st.x[it.k];save();draw();say('已刪除一筆「'+r.add+'」。如刪錯，可按「＋新增」補回。');
+}
+function draw(){chart();list();
+ ['be','bc','bd','bk'].forEach(i=>{$(i).style.display=canW?'':'none';});
+ $('be').parentElement.style.display=canW?'':'none';
+ if(!canW)edit=false;
+ const ab=$('ab');ab.style.display=(edit&&canW)?'flex':'none';ab.innerHTML='';
+ if(edit)CFG.rows.filter(r=>r.multi).forEach(r=>{const b=document.createElement('button');b.className='btn';b.textContent='＋新增'+r.add;b.onclick=()=>addItem(r);ab.appendChild(b);});
+$('be').className='btn'+(edit?' on':'');$('be').textContent=edit?'✔ 完成編輯':'✏️ 編輯日期';$('bd').textContent=armD?'再按一次確認還原':'還原預設日期';$('bk').textContent=armK?'再按一次確認清除':'清除所有勾選';}
+$('be').onclick=()=>{edit=!edit;say(edit?'請直接修改右側日期；會議與實地訪視可刪除或新增，圖表會立即更新。':'');draw();};
+$('bc').onclick=()=>{
+ const vr=CFG.rows.find(r=>r.rid==='visit');const vl=rowItems(vr).map(i=>dt(i.k)[0]).sort();
+ if(!vl.length){say('目前沒有實地訪視日期，請先按「＋新增實地訪視日」。');return;}
+ const v=vl[0],t=P(v);
+ const x=new Date(t);x.setUTCMonth(x.getUTCMonth()-1);
+ const rep=F(x.getTime());
+ const dow=new Date(t).getUTCDay();
+ const ppt=F(t-((dow+6)%7)*DAY-7*DAY);
+ st.d.rep=[rep];st.d.ppt=[ppt];save();draw();
+ say('已依第一次訪視日 '+md(v)+wd(v)+' 重算：申報資料 '+md(rep)+wd(rep)+'、簡報 '+md(ppt)+wd(ppt)+'。若申報日落在假日，請自行調整。');
+};
+$('bd').onclick=()=>{if(!armD){armD=true;draw();setTimeout(()=>{armD=false;draw();},4000);return;}armD=false;st.d={};st.rl={};save();draw();say('已還原為預設日期與預設的會議、訪視次數。');};
+$('bk').onclick=()=>{if(!armK){armK=true;draw();setTimeout(()=>{armK=false;draw();},4000);return;}armK=false;st.x={};save();draw();say('已清除所有勾選。');};
+setMode('local');draw();
+(async()=>{
+ try{
+  if(!(window.claude&&claude.use))return;
+  const c=await claude.use('db');if(!c)return;
+  try{const u=await claude.use('user');if(u&&u.can&&(await u.can('data.write'))===false){canW=false;draw();}}catch(e){}
+  dbref=c.doc('plan/main');
+  dbref.onSnapshot(s=>{
+   if(s.exists){try{const o=JSON.parse(s.data().state);if(o&&o.d&&o.x){st=o;st.rl=st.rl||{};draw();}}catch(e){}setMode(canW?'shared':'denied');}
+   else{setMode(canW?'shared':'denied');}
+  },()=>{dbref=null;setMode('local');});
+ }catch(e){}
+})();
+</script>
+</body>
+</html>
