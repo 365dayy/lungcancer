@@ -45,11 +45,12 @@ h1{font-size:20px;margin:0 0 4px}
 .note{max-width:1100px;margin:14px auto 0;font-size:13px;color:var(--muted);line-height:1.7}
 .note b{color:var(--text)}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <h1>肺癌疾病認證時程甘特圖</h1>
 <div class="sub">2026 年 11 月 – 2027 年 7 月　｜　◆ 里程碑　● 例行會議　▬ 期間　｜　紅線＝今天</div>
-<div class="card"><div class="scroll"><div class="chart" id="chart"></div></div></div>
+<div class="card" style="max-width:1100px;margin:0 auto 14px"><div id="authStatus" class="msg">雲端資料載入中…</div><div id="updatedAt" class="msg"></div><button class="btn" id="loginBtn">🔐 Google 登入／同步</button><button class="btn" id="logoutBtn" style="display:none">登出</button></div><div class="card"><div class="scroll"><div class="chart" id="chart"></div></div></div>
 <div class="card ck">
 <h2>✅ 完成進度與日期</h2>
 <div class="prog"><i id="pb"></i></div><div class="pt" id="pt"></div>
@@ -75,7 +76,7 @@ const wd=s=>'（'+WD[new Date(P(s)).getUTCDay()]+'）';
 const S=Date.UTC(2026,10,1),E=Date.UTC(2026,10+CFG.months,1),T=E-S;
 const pct=t=>Math.max(0,Math.min(100,(t-S)/T*100));
 const def={};CFG.rows.forEach(r=>r.items.forEach(i=>def[i.k]=i.e?[i.s,i.e]:[i.s]));
-let canW=true,st={d:{},x:{},rl:{}},edit=false,dbref=null,saveT=null,armD=false,armK=false;
+let canW=false,st={d:{},x:{},rl:{}},edit=false,dbref=null,saveT=null,armD=false,armK=false,cloudReady=false;
 const rowItems=r=>st.rl&&st.rl[r.rid]?st.rl[r.rid].map(k=>({k})):r.items;
 const dt=k=>st.d[k]||def[k];
 const $=id=>document.getElementById(id);
@@ -84,11 +85,11 @@ const modeText={local:'資料目前只存在這個瀏覽器。',shared:'資料�
 const setMode=m=>{$('mode').textContent=modeText[m];};
 try{const l=JSON.parse(localStorage.getItem(CFG.key)||'null');if(l&&l.d&&l.x){st=l;st.rl=st.rl||{};}}catch(e){}
 function save(){
- try{localStorage.setItem(CFG.key,JSON.stringify(st));}catch(e){}
- if(!dbref)return;
+ if(!canW||!cloudReady)return;
  clearTimeout(saveT);
- saveT=setTimeout(async()=>{try{await dbref.set({state:JSON.stringify(st)});setMode('shared');}catch(e){canW=false;edit=false;setMode('denied');draw();}},400);
+ saveT=setTimeout(async()=>{try{await dbref.set({state:JSON.stringify(st),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});say('已同步至雲端。');}catch(e){say('同步失敗，請確認網路或權限。');}},400);
 }
+
 function chart(){
  let h='<div class="row head"><div class="name">項目</div><div class="tl">';
  const mc=(i)=>{const y=2026+Math.floor((10+i)/12),m=(10+i)%12+1;return [y,m];};
@@ -174,19 +175,23 @@ $('bc').onclick=()=>{
 };
 $('bd').onclick=()=>{if(!armD){armD=true;draw();setTimeout(()=>{armD=false;draw();},4000);return;}armD=false;st.d={};st.rl={};save();draw();say('已還原為預設日期與預設的會議、訪視次數。');};
 $('bk').onclick=()=>{if(!armK){armK=true;draw();setTimeout(()=>{armK=false;draw();},4000);return;}armK=false;st.x={};save();draw();say('已清除所有勾選。');};
-setMode('local');draw();
-(async()=>{
- try{
-  if(!(window.claude&&claude.use))return;
-  const c=await claude.use('db');if(!c)return;
-  try{const u=await claude.use('user');if(u&&u.can&&(await u.can('data.write'))===false){canW=false;draw();}}catch(e){}
-  dbref=c.doc('plan/main');
-  dbref.onSnapshot(s=>{
-   if(s.exists){try{const o=JSON.parse(s.data().state);if(o&&o.d&&o.x){st=o;st.rl=st.rl||{};draw();}}catch(e){}setMode(canW?'shared':'denied');}
-   else{setMode(canW?'shared':'denied');}
-  },()=>{dbref=null;setMode('local');});
- }catch(e){}
-})();
+setMode('denied');draw();
+const firebaseConfig={apiKey:"AIzaSyD5smZ83Kwdzr0HvcRdsucFaXRboDRVfI",authDomain:"ami2027-c6fc1.firebaseapp.com",projectId:"ami2027-c6fc1",storageBucket:"ami2027-c6fc1.firebasestorage.app",messagingSenderId:"855629354291",appId:"1:855629354291:web:a1e2870bf47186e21b1a46"};
+const AUTHORIZED_EMAILS=["ls27iy37@gmail.com"];
+firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();
+$('loginBtn').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{$('authStatus').textContent='登入失敗：'+e.message;});
+$('logoutBtn').onclick=()=>auth.signOut();
+function setAuthUI(user){$('loginBtn').style.display=user?'none':'';$('logoutBtn').style.display=user?'':'none';$('authStatus').textContent=user?(user.email+(canW?'（可編輯及同步）':'（唯讀檢視）')):'公開檢視模式：未登入（唯讀，可查看最新雲端資料）';}
+auth.onAuthStateChanged(user=>{
+ canW=!!(user&&user.emailVerified&&AUTHORIZED_EMAILS.includes(user.email));edit=false;cloudReady=false;dbref=db.doc('plan/lung');setAuthUI(user);draw();
+ dbref.onSnapshot(s=>{
+  if(s.exists){const data=s.data();try{const o=JSON.parse(data.state||'{}');if(o&&o.d&&o.x){st=o;st.rl=st.rl||{};draw();}}catch(e){};
+  }
+  cloudReady=true;setMode(canW?'shared':'denied');
+  const ts=s.exists&&s.data().updatedAt;if(ts&&ts.toDate){const d=ts.toDate();$('updatedAt').textContent='最後更新時間：'+d.toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false});}else $('updatedAt').textContent='最後更新時間：尚未更新';
+  setAuthUI(user);
+ },e=>{$('authStatus').textContent='雲端讀取失敗：'+e.message;});
+});
 </script>
 </body>
 </html>
