@@ -177,7 +177,7 @@ $('bd').onclick=()=>{if(!armD){armD=true;draw();setTimeout(()=>{armD=false;draw(
 $('bk').onclick=()=>{if(!armK){armK=true;draw();setTimeout(()=>{armK=false;draw();},4000);return;}armK=false;st.x={};save();draw();say('已清除所有勾選。');};
 setMode('denied');draw();
 const firebaseConfig={apiKey:"AIzaSyD5smZ83Kwdzr0HvcR3dsucFaXRboDRVfI",authDomain:"ami2027-c6fc1.firebaseapp.com",projectId:"ami2027-c6fc1",storageBucket:"ami2027-c6fc1.firebasestorage.app",messagingSenderId:"855629354291",appId:"1:855629354291:web:a1e2870bf47186e21b1a46"};
-const AUTHORIZED_EMAILS=["ls27iy37@gmail.com"];
+const AUTHORIZED_EMAILS=["ls27iy37@gmail.com","sunshine10914@gmail.com"];
 firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();
 $('loginBtn').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{$('authStatus').textContent='登入失敗：'+e.message;});
 $('logoutBtn').onclick=()=>auth.signOut();
